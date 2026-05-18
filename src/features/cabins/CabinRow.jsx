@@ -7,6 +7,8 @@ import {
 } from "@tanstack/react-query";
 import { deleteCabin } from "../../services/cabinsApis";
 import toast from "react-hot-toast";
+import { useState } from "react";
+import CreateCabinForm from "./CreateCabinForm";
 
 const TableRow = styled.div`
   display: grid;
@@ -48,6 +50,7 @@ const Discount = styled.div`
 `;
 
 export default function CabinRow({ cabin }) {
+  const [showForm, setShowForm] = useState(false);
   const {
     id: cabinId,
     name,
@@ -75,10 +78,16 @@ export default function CabinRow({ cabin }) {
         <div>fits up to {maxCapacity} guests</div>
         <Price>{formatCurrency(regularPrice)}</Price>
         <Discount>{discount}</Discount>
-        <button disabled={isPending} onClick={mutate}>
+       <div>
+         <button disabled={isPending} onClick={mutate}>
           {isPending ? "deleting..." : "delete"}
         </button>
+        <button onClick={()=>setShowForm((show)=>!show)}>
+         edit
+        </button>
+       </div>
       </TableRow>
+      {showForm && <CreateCabinForm cabinToEdit={cabin}/>}
     </>
   );
 }
