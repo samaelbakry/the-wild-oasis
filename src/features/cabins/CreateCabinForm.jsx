@@ -1,17 +1,16 @@
 import { useForm } from "react-hook-form";
 import styled from "styled-components";
-import toast from "react-hot-toast";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import Input from "../../ui/Input";
-import Form from "../../ui/Form";
+import ProtoTypes from "prop-types";
 import Button from "../../ui/Button";
 import FileInput from "../../ui/FileInput";
-import ProtoTypes from "prop-types"
+import Form from "../../ui/Form";
+import Input from "../../ui/Input";
 
 import Textarea from "../../ui/Textarea";
 
-import { createEditCabin } from "../../services/cabinsApis";
+import { useCreateCabin } from "./useCreateCabin";
+import { useEditCabin } from "./useEditCabin";
 
 const FormRow = styled.div`
   display: grid;
@@ -53,70 +52,41 @@ CreateCabinForm.propTypes = {
   cabinToEdit: ProtoTypes.object,
 };
 
-function CreateCabinForm({cabinToEdit = {}}) {
-  const { id:editId , ...editValues } = cabinToEdit;
-  const isEditing = Boolean(editId)
-  const {
-    register,
-    handleSubmit,
-    getValues,
-    reset,
-    formState,
-  } = useForm({
-    defaultValues: isEditing ? editValues : {}
-    
+function CreateCabinForm({ cabinToEdit = {} }) {
+  const { id: editId, ...editValues } = cabinToEdit;
+
+  const isEditing = Boolean(editId);
+  const { register, handleSubmit, getValues, reset, formState } = useForm({
+    defaultValues: isEditing ? editValues : {},
   });
 
   const { errors } = formState;
-
-  const queryClient = useQueryClient();
-
-  const { mutate:createCabin, isPending:isCreating } = useMutation({
-    mutationFn: createEditCabin,
-
-    onSuccess: () => {
-      toast.success("Cabin Created Successfully");
-
-      queryClient.invalidateQueries({
-        queryKey: ["cabins"],
-      });
-
-      reset();
-    },
-
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
-  const { mutate:updateCabin , isPending:isUpdating } = useMutation({
-    mutationFn: ({newCabin, id}) => createEditCabin(newCabin, id),
-
-    onSuccess: () => {
-      toast.success("Cabin updated Successfully");
-
-      queryClient.invalidateQueries({
-        queryKey: ["cabins"],
-      });
-
-      reset();
-    },
-
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
+  const { createCabin, isCreating } = useCreateCabin();
+  const { updateCabin, isUpdating } = useEditCabin();
 
   function onSubmit(data) {
     const image = typeof data.image === "string" ? data.image : data.image[0];
-      if(isEditing) updateCabin({ newCabin :{...data , image} , id:editId})
-      else createCabin({...data , image});
+
+    if (isEditing)
+      updateCabin(
+        { newCabin: { ...data, image }, id: editId },
+        {
+          onSuccess: () => reset(),
+        },
+      );
+    else
+      createCabin(
+        { ...data, image },
+        {
+          onSuccess: () => reset(),
+        },
+      );
   }
 
   const isWorking = isCreating || isUpdating;
 
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
-
       <FormRow>
         <Label htmlFor="name">Cabin name</Label>
 
@@ -146,9 +116,7 @@ function CreateCabinForm({cabinToEdit = {}}) {
           })}
         />
 
-        {errors?.maxCapacity && (
-          <Error>{errors.maxCapacity.message}</Error>
-        )}
+        {errors?.maxCapacity && <Error>{errors.maxCapacity.message}</Error>}
       </FormRow>
 
       <FormRow>
@@ -166,11 +134,8 @@ function CreateCabinForm({cabinToEdit = {}}) {
           })}
         />
 
-        {errors?.regularPrice && (
-          <Error>{errors.regularPrice.message}</Error>
-        )}
+        {errors?.regularPrice && <Error>{errors.regularPrice.message}</Error>}
       </FormRow>
-
 
       <FormRow>
         <Label htmlFor="discount">Discount</Label>
@@ -188,16 +153,11 @@ function CreateCabinForm({cabinToEdit = {}}) {
           })}
         />
 
-        {errors?.discount && (
-          <Error>{errors.discount.message}</Error>
-        )}
+        {errors?.discount && <Error>{errors.discount.message}</Error>}
       </FormRow>
 
-
       <FormRow>
-        <Label htmlFor="description">
-          Description for website
-        </Label>
+        <Label htmlFor="description">Description for website</Label>
 
         <Textarea
           id="description"
@@ -207,12 +167,9 @@ function CreateCabinForm({cabinToEdit = {}}) {
           })}
         />
 
-        {errors?.description && (
-          <Error>{errors.description.message}</Error>
-        )}
+        {errors?.description && <Error>{errors.description.message}</Error>}
       </FormRow>
 
-   
       <FormRow>
         <Label htmlFor="image">Cabin photo</Label>
 
@@ -225,11 +182,8 @@ function CreateCabinForm({cabinToEdit = {}}) {
           })}
         />
 
-        {errors?.image && (
-          <Error>{errors.image.message}</Error>
-        )}
+        {errors?.image && <Error>{errors.image.message}</Error>}
       </FormRow>
-
 
       <FormRow>
         <Button variation="secondary" type="reset">
@@ -237,7 +191,7 @@ function CreateCabinForm({cabinToEdit = {}}) {
         </Button>
 
         <Button disabled={isWorking}>
-         {isEditing ? "Update Cabin" : "Create Cabin"}
+          {isEditing ? "Update Cabin" : "Create Cabin"}
         </Button>
       </FormRow>
     </Form>

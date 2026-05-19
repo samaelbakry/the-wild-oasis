@@ -1,14 +1,12 @@
 import PropTypes from "prop-types";
+import { useState } from "react";
+import { HiPencil, HiTrash } from "react-icons/hi";
+import { IoDuplicateOutline } from "react-icons/io5";
 import styled from "styled-components";
 import { formatCurrency } from "../../utils/helpers";
-import {
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
-import { deleteCabin } from "../../services/cabinsApis";
-import toast from "react-hot-toast";
-import { useState } from "react";
 import CreateCabinForm from "./CreateCabinForm";
+import { useDeleteCabin } from "./useDeleteCabin";
+import { useCreateCabin } from "./useCreateCabin";
 
 const TableRow = styled.div`
   display: grid;
@@ -48,28 +46,30 @@ const Discount = styled.div`
   font-weight: 500;
   color: var(--color-green-700);
 `;
+const Btns = styled.div`
+ display: flex;
+ align-items: center;
+ gap: 14px;
+`;
 
 export default function CabinRow({ cabin }) {
   const [showForm, setShowForm] = useState(false);
-  const {
-    id: cabinId,
-    name,
+  const { id: cabinId, name, maxCapacity, regularPrice, image, discount } = cabin;
+
+ const { isPending, deleteCabinFn } = useDeleteCabin()
+ const {createCabin} = useCreateCabin()
+
+ function handleDuplicate(){
+  createCabin({
+    name:`copy of ${name}`,
     maxCapacity,
     regularPrice,
     image,
     discount,
-  } = cabin;
-  const queryClient = useQueryClient();
-  const { isPending, mutate } = useMutation({
-    mutationFn: () => deleteCabin(cabinId),
-    onSuccess: () => {
-      toast.success("Cabin Deleted !");
-      queryClient.invalidateQueries({ queryKey: ["cabins"] });
-    },
-    onError: (err) => {
-    toast.error(err.message);
-  },
-  });
+  })
+ }
+
+
   return (
     <>
       <TableRow role="row">
@@ -78,14 +78,17 @@ export default function CabinRow({ cabin }) {
         <div>fits up to {maxCapacity} guests</div>
         <Price>{formatCurrency(regularPrice)}</Price>
         <Discount>{discount}</Discount>
-       <div>
-         <button disabled={isPending} onClick={mutate}>
-          {isPending ? "deleting..." : "delete"}
+       <Btns>
+         <button onClick={handleDuplicate}>
+          <IoDuplicateOutline />
+        </button>
+         <button disabled={isPending} onClick={() => deleteCabinFn(cabinId)}>
+          {isPending ? "deleting..." : <HiTrash />}
         </button>
         <button onClick={()=>setShowForm((show)=>!show)}>
-         edit
+         <HiPencil />
         </button>
-       </div>
+       </Btns>
       </TableRow>
       {showForm && <CreateCabinForm cabinToEdit={cabin}/>}
     </>
