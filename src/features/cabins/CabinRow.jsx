@@ -1,31 +1,34 @@
 import PropTypes from "prop-types";
-import { useState } from "react";
 import { HiPencil, HiTrash } from "react-icons/hi";
 import { IoDuplicateOutline } from "react-icons/io5";
 import styled from "styled-components";
+import Modal from "../../ui/Modal";
 import { formatCurrency } from "../../utils/helpers";
 import CreateCabinForm from "./CreateCabinForm";
-import { useDeleteCabin } from "./useDeleteCabin";
 import { useCreateCabin } from "./useCreateCabin";
+import { useDeleteCabin } from "./useDeleteCabin";
+import ConfirmDelete from "../../ui/ConfirmDelete";
+import Table from "../../ui/Table";
+import Menus from "../../ui/Menus";
 
-const TableRow = styled.div`
-  display: grid;
-  grid-template-columns: 0.6fr 1.8fr 2.2fr 1fr 1fr 1fr;
-  column-gap: 2.4rem;
-  align-items: center;
-  padding: 1.4rem 2.4rem;
-
-  &:not(:last-child) {
-    border-bottom: 1px solid var(--color-grey-100);
-  }
-`;
+CabinRow.propTypes = {
+  cabin: PropTypes.shape({
+    id: PropTypes.number,
+    name: PropTypes.string,
+    maxCapacity: PropTypes.number,
+    regularPrice: PropTypes.number,
+    image: PropTypes.string,
+    discount: PropTypes.number,
+  }).isRequired,
+};
 
 const Img = styled.img`
   display: block;
-  width: 6.4rem;
+  width: 9rem;
   aspect-ratio: 3 / 2;
   object-fit: cover;
   object-position: center;
+  border-radius: 3px;
   transform: scale(1.5) translateX(-7px);
 `;
 
@@ -46,62 +49,73 @@ const Discount = styled.div`
   font-weight: 500;
   color: var(--color-green-700);
 `;
-const Btns = styled.div`
- display: flex;
- align-items: center;
- gap: 14px;
-`;
 
 export default function CabinRow({ cabin }) {
-  const [showForm, setShowForm] = useState(false);
-  const { id: cabinId, name, maxCapacity, regularPrice, image, discount } = cabin;
-
- const { isPending, deleteCabinFn } = useDeleteCabin()
- const {createCabin} = useCreateCabin()
-
- function handleDuplicate(){
-  createCabin({
-    name:`copy of ${name}`,
+  const {
+    id: cabinId,
+    name,
     maxCapacity,
     regularPrice,
     image,
     discount,
-  })
- }
+  } = cabin;
 
+  const { isPending, deleteCabinFn } = useDeleteCabin();
+  const { createCabin } = useCreateCabin();
+
+  function handleDuplicate() {
+    createCabin({
+      name: `copy of ${name}`,
+      maxCapacity,
+      regularPrice,
+      image,
+      discount,
+    });
+  }
 
   return (
     <>
-      <TableRow role="row">
+      <Table.Row>
         <Img src={image} />
         <Cabin>{name}</Cabin>
         <div>fits up to {maxCapacity} guests</div>
         <Price>{formatCurrency(regularPrice)}</Price>
         <Discount>{discount}</Discount>
-       <Btns>
-         <button onClick={handleDuplicate}>
-          <IoDuplicateOutline />
-        </button>
-         <button disabled={isPending} onClick={() => deleteCabinFn(cabinId)}>
-          {isPending ? "deleting..." : <HiTrash />}
-        </button>
-        <button onClick={()=>setShowForm((show)=>!show)}>
-         <HiPencil />
-        </button>
-       </Btns>
-      </TableRow>
-      {showForm && <CreateCabinForm cabinToEdit={cabin}/>}
+        <Modal>
+          <Menus.Menu>
+            <Menus.Toggle id={cabinId} />
+
+            <Menus.List id={cabinId}>
+              <Modal.Open opens="edit">
+                <Menus.Button icon={<HiPencil />}>Edit</Menus.Button>
+              </Modal.Open>
+
+              <Modal.Window name="edit">
+                <CreateCabinForm cabinToEdit={cabin} />
+              </Modal.Window>
+
+              <Menus.Button
+                onClick={handleDuplicate}
+                icon={<IoDuplicateOutline />}
+              >
+                Duplicate
+              </Menus.Button>
+
+              <Modal.Open opens="delete">
+                <Menus.Button icon={<HiTrash />}>Delete</Menus.Button>
+              </Modal.Open>
+            </Menus.List>
+
+            <Modal.Window name="delete">
+              <ConfirmDelete
+                resourceName="cabins"
+                disabled={isPending}
+                onConfirm={() => deleteCabinFn(cabinId)}
+              />
+            </Modal.Window>
+          </Menus.Menu>
+        </Modal>
+      </Table.Row>
     </>
   );
 }
-
-CabinRow.propTypes = {
-  cabin: PropTypes.shape({
-    id: PropTypes.number,
-    name: PropTypes.string,
-    maxCapacity: PropTypes.number,
-    regularPrice: PropTypes.number,
-    image: PropTypes.string,
-    discount: PropTypes.number,
-  }).isRequired,
-};

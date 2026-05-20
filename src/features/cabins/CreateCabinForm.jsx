@@ -50,9 +50,10 @@ const Error = styled.span`
 
 CreateCabinForm.propTypes = {
   cabinToEdit: ProtoTypes.object,
+  onCloseModal: ProtoTypes.func,
 };
 
-function CreateCabinForm({ cabinToEdit = {} }) {
+function CreateCabinForm({ cabinToEdit = {} , onCloseModal }) {
   const { id: editId, ...editValues } = cabinToEdit;
 
   const isEditing = Boolean(editId);
@@ -71,14 +72,14 @@ function CreateCabinForm({ cabinToEdit = {} }) {
       updateCabin(
         { newCabin: { ...data, image }, id: editId },
         {
-          onSuccess: () => reset(),
+          onSuccess: () => {reset() , onCloseModal()}
         },
       );
     else
       createCabin(
         { ...data, image },
         {
-          onSuccess: () => reset(),
+          onSuccess: () => {reset() , onCloseModal()},
         },
       );
   }
@@ -86,7 +87,7 @@ function CreateCabinForm({ cabinToEdit = {} }) {
   const isWorking = isCreating || isUpdating;
 
   return (
-    <Form onSubmit={handleSubmit(onSubmit)}>
+    <Form onSubmit={handleSubmit(onSubmit)} type={onCloseModal ? "modal" : "regular"}>
       <FormRow>
         <Label htmlFor="name">Cabin name</Label>
 
@@ -186,7 +187,7 @@ function CreateCabinForm({ cabinToEdit = {} }) {
       </FormRow>
 
       <FormRow>
-        <Button variation="secondary" type="reset">
+        <Button variation="secondary" type="reset" onClick={()=> onCloseModal?.() }>
           Cancel
         </Button>
 
