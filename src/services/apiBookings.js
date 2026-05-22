@@ -1,17 +1,31 @@
 import { getToday } from "../utils/helpers";
+import { PAGE_COUNT } from "../utils/constants";
 import supabase from "./supabase";
 
-export async function getBookings() {
-  const { data, error } = await supabase.from("bookings").select("* , cabins(name) , guests(fullName , email)" );
+export async function getBookings({ filter, sortByRow, page }) {
+  let query = supabase
+    .from("bookings")
+    .select("* , cabins(name) , guests(fullName , email)", { count: "exact" });
+  if (filter) query = query.eq(filter.field, filter.value) ;
+  if (sortByRow)
+    query = query.order(sortByRow.field, {
+      ascending: sortByRow.direction === "asc",
+    });
+  if (page) {
+    const from = (page - 1) * PAGE_COUNT;
+    const to = from + PAGE_COUNT - 1;
+    query = query.range(from, to);
+  }
+
+  const { data, error, count } = await query;
 
   if (error) {
     console.log(error);
     throw new Error("somthing went wrong in bookings services ❌");
   }
 
-  return data;
+  return { data, count };
 }
-
 
 export async function getBooking(id) {
   const { data, error } = await supabase
@@ -67,7 +81,7 @@ export async function getStaysTodayActivity() {
     .from("bookings")
     .select("*, guests(fullName, nationality, countryFlag)")
     .or(
-      `and(status.eq.unconfirmed,startDate.eq.${getToday()}),and(status.eq.checked-in,endDate.eq.${getToday()})`
+      `and(status.eq.unconfirmed,startDate.eq.${getToday()}),and(status.eq.checked-in,endDate.eq.${getToday()})`,
     )
     .order("created_at");
 
