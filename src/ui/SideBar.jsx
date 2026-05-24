@@ -4,7 +4,7 @@ import MainNav from "./MainNav"
 import Uploader from "../data/Uploader"
 
 const StyledSidebar = styled.aside`
-  background-color: var(--color-grey-100);
+  background-color: var(--color-grey-50);
   padding: 4rem;
   grid-row: 1/-1;
   display: flex;
