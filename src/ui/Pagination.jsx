@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { HiChevronDoubleLeft, HiChevronDoubleRight } from "react-icons/hi";
 import { useSearchParams } from "react-router-dom";
 import styled from "styled-components";
@@ -59,45 +60,55 @@ const PaginationButton = styled.button`
   }
 `;
 
-export default function Pagination({count}) {
+export default function Pagination({ count }) {
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [searchParams , setSearchParams] = useSearchParams();
+  const currentPage = !searchParams.get("page")
+    ? 1
+    : Number(searchParams.get("page"));
 
-  const currentPage = !searchParams.get("page") ? 1 : Number(searchParams.get("page"))
+  const pageCount = Math.ceil(count / PAGE_COUNT);
 
-  const pageCount = Math.ceil(count / PAGE_COUNT )
-
-  function nextPage(){
-   const next =  currentPage === pageCount ? currentPage : currentPage + 1
-   searchParams.set("page" , next)
-   setSearchParams(searchParams)
+  function nextPage() {
+    const next = currentPage === pageCount ? currentPage : currentPage + 1;
+    searchParams.set("page", next);
+    setSearchParams(searchParams);
   }
-  function prevPage(){
-    const prev = currentPage === 1 ? currentPage : currentPage - 1
-    searchParams.set("page", prev)
-    setSearchParams(searchParams)
+  function prevPage() {
+    const prev = currentPage === 1 ? currentPage : currentPage - 1;
+    searchParams.set("page", prev);
+    setSearchParams(searchParams);
   }
 
-  if(pageCount <= 1) return null
+  if (pageCount <= 1) return null;
 
-  
-  return <>
-  <StyledPagination>
-    <p>
-      showing <span>{(currentPage -1) * PAGE_COUNT + 1 }
-      </span> {currentPage === pageCount ? count : currentPage * PAGE_COUNT} <span>{count}</span>
-    </p>
-    <Buttons>
-      <PaginationButton onClick={prevPage} disabled={currentPage ===1}>
-        <HiChevronDoubleLeft />
-        <span>Previous</span>
-      </PaginationButton>
+  return (
+    <>
+      <StyledPagination>
+        <P>
+          showing <span>{(currentPage - 1) * PAGE_COUNT + 1}</span>{" "}
+          {currentPage === pageCount ? count : currentPage * PAGE_COUNT}{" "}
+          <span>{count}</span>
+        </P>
+        <Buttons>
+          <PaginationButton onClick={prevPage} disabled={currentPage === 1}>
+            <HiChevronDoubleLeft />
+            <span>Previous</span>
+          </PaginationButton>
 
-      <PaginationButton onClick={nextPage} disabled={currentPage === pageCount}>
-        <span>Next</span>
-        <HiChevronDoubleRight />
-      </PaginationButton>
-    </Buttons>
-  </StyledPagination>
-  </>
+          <PaginationButton
+            onClick={nextPage}
+            disabled={currentPage === pageCount}
+          >
+            <span>Next</span>
+            <HiChevronDoubleRight />
+          </PaginationButton>
+        </Buttons>
+      </StyledPagination>
+    </>
+  );
 }
+
+Pagination.propTypes = {
+  count: PropTypes.number.isRequired,
+};

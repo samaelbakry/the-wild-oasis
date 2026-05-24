@@ -3,19 +3,16 @@ import { PAGE_COUNT } from "../utils/constants";
 import supabase from "./supabase";
 
 export async function getBookings({ filter, sortByRow, page }) {
-  let query = supabase
-    .from("bookings")
-    .select("* , cabins(name) , guests(fullName , email)", { count: "exact" });
+  let query = supabase.from("bookings") .select("* , cabins(name) , guests(fullName , email)", { count: "exact" });
+  
   if (filter) query = query.eq(filter.field, filter.value) ;
-  if (sortByRow)
-    query = query.order(sortByRow.field, {
-      ascending: sortByRow.direction === "asc",
-    });
-  if (page) {
-    const from = (page - 1) * PAGE_COUNT;
+
+  if (sortByRow) query = query.order(sortByRow.field, { ascending: sortByRow.direction === "asc", });
+
+  if (page) { 
+    const from = (page - 1) * PAGE_COUNT; 
     const to = from + PAGE_COUNT - 1;
-    query = query.range(from, to);
-  }
+    query = query.range(from, to);}
 
   const { data, error, count } = await query;
 

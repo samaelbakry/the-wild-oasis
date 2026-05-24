@@ -18,17 +18,21 @@ export function useBooking() {
         };
 
   //===SORTING===//
+
   const sortBy = searchParams.get("sortBy") || "startDate-desc";
   const [field, direction] = sortBy.split("-");
   const sortByRow = { field, direction };
 
   //===PAGINATION===//
+  
   const page = !searchParams.get("page") ? 1 : Number(searchParams.get("page"));
   const { data: { data: bookings, count } = {}, isLoading } = useQuery({
     queryKey: ["bookings", filter, sortByRow, page],
     queryFn: () => getBookings({ filter, sortByRow, page }),
   });
+
   //===PRE-FETCHING===//
+
   const pageCount = Math.ceil(count / PAGE_COUNT);
 
   if (page < pageCount) {

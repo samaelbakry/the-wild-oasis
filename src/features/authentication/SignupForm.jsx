@@ -1,27 +1,57 @@
+import { useForm } from "react-hook-form";
 import Button from "../../ui/Button";
 import Form from "../../ui/Form";
 import FormRow from "../../ui/FormRow";
 import Input from "../../ui/Input";
+import { useSignup } from "./useSignup";
 
 // Email regex: /\S+@\S+\.\S+/
 
 function SignupForm() {
+  const {register , handleSubmit , formState , getValues , reset} = useForm()
+  const { errors } = formState
+  const { isPending , signupFn} =useSignup()
+
+  function onSubmit({fullName , email , password}){
+    signupFn({fullName , email , password} , {
+      onSettled:reset
+    })
+  }
+
   return (
-    <Form>
-      <FormRow label="Full name" error={""}>
-        <Input type="text" id="fullName" />
+    <Form onSubmit={handleSubmit(onSubmit)}>
+      <FormRow label="Full name" error={errors?.fullName?.message}>
+        <Input type="text" id="fullName" {...register("fullName" , {required:"this field is required"})} />
       </FormRow>
 
-      <FormRow label="Email address" error={""}>
-        <Input type="email" id="email" />
+      <FormRow label="Email address" error={errors?.email?.message}>
+        <Input type="email" id="email" {...register("email" ,  
+
+        {required:"this field is required" ,
+         pattern:{value:/\S+@\S+\.\S+/ ,
+         message:"please enter a valid email address"
+         }})} />
       </FormRow>
 
-      <FormRow label="Password (min 8 characters)" error={""}>
-        <Input type="password" id="password" />
+      <FormRow label="Password (min 8 characters)" error={errors?.password?.message}>
+        <Input type="password" id="password" 
+        {...register("password" ,
+        {required:"this field is required",
+          minLength:{
+            value:8,
+            message:"password must be atleast 8 chars"
+          }
+        })} />
       </FormRow>
 
-      <FormRow label="Repeat password" error={""}>
-        <Input type="password" id="passwordConfirm" />
+      <FormRow label="Repeat password" error={errors?.passwordConfirm?.message}>
+        <Input type="password" id="passwordConfirm"
+         {...register("passwordConfirm" ,
+          {required:"this field is required",
+            validate:(value) => value === getValues().password || "passwords must be match"
+          } 
+
+        ) } />
       </FormRow>
 
       <FormRow>
@@ -29,7 +59,7 @@ function SignupForm() {
         <Button variation="secondary" type="reset">
           Cancel
         </Button>
-        <Button>Create new user</Button>
+        <Button>{isPending ? "Just a sec..." : "Create new user"}</Button>
       </FormRow>
     </Form>
   );
