@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import styled from "styled-components";
 
 const StyledErrorFallback = styled.main`
@@ -29,3 +30,21 @@ const Box = styled.div`
     color: var(--color-grey-500);
   }
 `;
+
+export default function ErrorFallback({ error }) {
+  return (
+    <StyledErrorFallback>
+      <Box>
+        <h1>Something went wrong ❌</h1>
+        <p>We could not fetch the data. Please try again later.</p>
+        {error?.message && <p>{error.message}</p>}
+      </Box>
+    </StyledErrorFallback>
+  );
+}
+
+ErrorFallback.propTypes = {
+  error: PropTypes.shape({
+    message: PropTypes.string,
+  }),
+};

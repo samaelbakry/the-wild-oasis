@@ -20,5 +20,6 @@ export function useStaysBooking() {
     (stay) => stay.status === "checked-in" || stay.status === "checked-out"
   );
 
+  console.log(confirmedStays);
   return { isLoading, stays, confirmedStays, numDays };
 }
