@@ -7,15 +7,16 @@ import Settings from "./pages/Settings";
 import Account from "./pages/Account";
 import Login from "./pages/Login";
 import PageNotFound from "./pages/PageNotFound";
-import { GlobalStyles } from "./styles/GlobalStyles";
+import GlobalStyles  from "./styles/GlobalStyles";
 import AppLayout from "./ui/AppLayout";
 import Booking from "./pages/Booking";
 import Checkin from "./pages/Checkin";
 import ProtectedRoutes from "./ui/ProtectedRoutes";
+import { DarkModeProvider } from "./context/DarkModeContext";
 
 function App() {
   return (
-    <>
+    <DarkModeProvider>
       <GlobalStyles />
       <BrowserRouter>
         <Routes>
@@ -35,7 +36,7 @@ function App() {
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </BrowserRouter>
-    </>
+    </DarkModeProvider>
   );
 }
 
